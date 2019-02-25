@@ -1,0 +1,30 @@
+{
+  "name": "lazy-iter",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "",
+    "start": "npm run build && node dist/index.js",
+    "build": "tsc --module commonjs",
+    "cb": "npm run clean && npm run build",
+    "clean": "rimraf dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iwburns/lazy-iter.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iwburns/lazy-iter/issues"
+  },
+  "homepage": "https://github.com/iwburns/lazy-iter#readme",
+  "devDependencies": {
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "@iwburns/tupperware": "^1.0.0",
+    "rimraf": "^2.6.3"
+  }
+}
