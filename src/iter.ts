@@ -1,77 +1,140 @@
-import TakeIter from './take';
-import FilterIter from './filter';
-import MapIter from './map';
+// todo: can we split up this file at all?  need to avoid circular dependencies when doing so
 
-export function makeArray<T>(iter: ILazyIter<T>): Array<T> {
-  const arr = [];
+export default abstract class LazyIter<Inner, Output> {
+  // return the next item in the list if it exists (no lazyness here)
+  abstract next(): IteratorResult<Output>;
 
-  while (true) {
-    const nextItem = iter.next();
+  // todo: can we allow other types here?
+  static from<Type>(iterable: Array<Type>): LazyIter<Type, Type> {
+    return new BaseIter(iterable);
+  }
 
-    if (nextItem.done) {
-      return arr;
+  // consume rest of iterator and collect into an array
+  toArray(): Array<Output> {
+    const arr = [];
+
+    while (true) {
+      const nextItem = this.next();
+
+      if (nextItem.done) {
+        return arr;
+      }
+
+      arr.push(nextItem.value);
     }
+  }
 
-    arr.push(nextItem.value);
+  // reduce into a single value, not lazy
+  reduce<Acc>(reducer: (acc: Acc, val: Output) => Acc, initialValue: Acc): Acc {
+    return this.toArray().reduce(reducer, initialValue);
+  }
+
+  // return iterator ending after "count" items
+  take(count: number): LazyIter<Inner, Output> {
+    return new TakeIter(this, count);
+  }
+
+  // filter by a predicate, lazy
+  filter(predicate: (val: Output) => boolean): LazyIter<Inner, Output> {
+    return new FilterIter(this, predicate);
+  }
+
+  // map one value to another, lazy
+  map<Mapped>(func: (val: Output) => Mapped): LazyIter<Inner, Mapped> {
+    return new MapIter(this, func);
   }
 }
 
-export interface ILazyIter<T> {
-  // return the next item in the list if it exists (no lazyness here)
-  next(): IteratorResult<T>;
-
-  // return iterator ending after "count" items
-  take(count: number): ILazyIter<T>;
-
-  // filter by a predicate, lazy
-  filter(predicate: (val: T) => boolean): ILazyIter<T>;
-
-  // map one value to another, lazy
-  map<U>(func: (val: T) => U): ILazyIter<U>;
-
-  // consume rest of iterator and collect into an array
-  toArray(): Array<T>;
-
-  // reduce into a single value, not lazy
-  reduce<A>(reducer: (acc: A, val: T) => A, initialValue: A): A;
-}
-
-export default class LazyIter<T> implements ILazyIter<T> {
+export class BaseIter<T> extends LazyIter<T, T> {
   _iter: Iterator<T>;
 
-  private constructor(iterable: any) {
+  constructor(iterable: any) {
+    super();
     if (typeof iterable[Symbol.iterator] !== 'function') {
       throw new Error('`iterable[Symbol.iterator]` must be a function');
     }
     this._iter = iterable[Symbol.iterator]();
   }
 
-  // todo: can we allow other types here?
-  static from<T>(iterable: Array<T>): LazyIter<T> {
-    return new LazyIter(iterable);
-  }
-
   next(): IteratorResult<T> {
     return this._iter.next();
   }
+}
 
-  take(count: number): ILazyIter<T> {
-    return new TakeIter(this, count);
+export class TakeIter<T, U> extends LazyIter<T, U> {
+  _iter: LazyIter<T, U>;
+  size: number;
+  index: number;
+
+  constructor(iter: LazyIter<T, U>, size: number) {
+    super();
+    this._iter = iter;
+    this.size = size;
+    this.index = 0;
   }
 
-  filter(predicate: (val: T) => boolean): ILazyIter<T> {
-    return new FilterIter(this, predicate);
+  next(): IteratorResult<U> {
+    if (this.index >= this.size) {
+      // this is a workaround due to bad TS type defs on IteratorResult
+      // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
+      const result = { done: true, value: undefined };
+      return result as unknown as IteratorResult<U>;
+    }
+
+    this.index += 1;
+
+    return this._iter.next();
+  }
+}
+
+export class FilterIter<T, U> extends LazyIter<T, U> {
+  _iter: LazyIter<T, U>;
+  predicate: (val: U) => boolean;
+
+  constructor(iter: LazyIter<T, U>, predicate: (val: U) => boolean) {
+    super();
+    this._iter = iter;
+    this.predicate = predicate;
   }
 
-  map<U>(func: (val: T) => U): ILazyIter<U> {
-    return new MapIter(this, func);
+  next(): IteratorResult<U> {
+    while (true) {
+      const nextItem = this._iter.next();
+
+      if (nextItem.done) {
+        return nextItem;
+      }
+
+      if (this.predicate(nextItem.value)) {
+        return nextItem;
+      }
+    }
+  }
+}
+
+export class MapIter<T, U, M> extends LazyIter<T, M> {
+  _iter: LazyIter<T, U>;
+  func: (val: U) => M;
+
+  constructor(iter: LazyIter<T, U>, func: (val: U) => M) {
+    super();
+    this._iter = iter;
+    this.func = func;
   }
 
-  toArray(): Array<T> {
-    return makeArray(this);
-  }
+  next(): IteratorResult<M> {
+    const nextItem = this._iter.next();
 
-  reduce<A>(reducer: (acc: A, val: T) => A, initialValue: A): A {
-    return makeArray(this).reduce(reducer, initialValue);
+    if (nextItem.done) {
+      // this is a workaround due to bad TS type defs on IteratorResult
+      // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
+      const result = { done: true, value: undefined };
+      return result as unknown as IteratorResult<M>;
+    }
+
+    return {
+      done: false,
+      value: this.func(nextItem.value),
+    };
   }
 }
