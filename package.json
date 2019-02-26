@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "",
-    "start": "npm run build && node dist/index.js",
+    "bench": "npm run cb && node benches/index.js",
+    "examples": "npm run cb && node examples/index.js",
     "build": "tsc --module commonjs",
     "cb": "npm run clean && npm run build",
     "clean": "rimraf dist"
@@ -21,10 +22,9 @@
   },
   "homepage": "https://github.com/iwburns/lazy-iter#readme",
   "devDependencies": {
+    "benchmark": "^2.1.4",
+    "rimraf": "^2.6.3",
     "typescript": "^3.3.3333"
   },
-  "dependencies": {
-    "@iwburns/tupperware": "^1.0.0",
-    "rimraf": "^2.6.3"
-  }
+  "dependencies": {}
 }
