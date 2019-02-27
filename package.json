@@ -23,6 +23,7 @@
   "homepage": "https://github.com/iwburns/lazy-iter#readme",
   "devDependencies": {
     "benchmark": "^2.1.4",
+    "node": "^10.15.1",
     "rimraf": "^2.6.3",
     "typescript": "^3.3.3333"
   },
