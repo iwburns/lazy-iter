@@ -26,7 +26,17 @@ export default abstract class LazyIter<Inner, Output> {
 
   // reduce into a single value, not lazy
   reduce<Acc>(reducer: (acc: Acc, val: Output) => Acc, initialValue: Acc): Acc {
-    return this.toArray().reduce(reducer, initialValue);
+    let final = initialValue;
+
+    while (true) {
+      const nextItem = this.next();
+
+      if (nextItem.done) {
+        return final;
+      }
+
+      final = reducer(final, nextItem.value);
+    }
   }
 
   // return iterator ending after "count" items
@@ -125,15 +135,8 @@ export class MapIter<T, U, M> extends LazyIter<T, M> {
   next(): IteratorResult<M> {
     const nextItem = this._iter.next();
 
-    if (nextItem.done) {
-      // this is a workaround due to bad TS type defs on IteratorResult
-      // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
-      const result = { done: true, value: undefined };
-      return result as unknown as IteratorResult<M>;
-    }
-
     return {
-      done: false,
+      done: nextItem.done,
       value: this.func(nextItem.value),
     };
   }
