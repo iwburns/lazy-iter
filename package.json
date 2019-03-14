@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "",
+    "test": "npm run clean && jest",
     "bench": "npm run cb && node benches/index.js",
     "examples": "npm run cb && node examples/index.js",
     "build": "tsc --module commonjs",
@@ -22,9 +22,12 @@
   },
   "homepage": "https://github.com/iwburns/lazy-iter#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.11",
     "benchmark": "^2.1.4",
+    "jest": "^24.5.0",
     "node": "^10.15.1",
     "rimraf": "^2.6.3",
+    "ts-jest": "^24.0.0",
     "typescript": "^3.3.3333"
   },
   "dependencies": {}
