@@ -91,4 +91,46 @@ describe('MapIter', () => {
   });
 });
 
+describe('ZipIter', () => {
+  it('should iterate over two iterables at the same time', () => {
+    const otherSrc = ['a', 'b', 'c', 'd', 'e'];
 
+    const iter = LazyIter.from(src).zip(otherSrc);
+
+    expect(iter.next().value).toEqual([1, 'a']);
+    expect(iter.next().value).toEqual([2, 'b']);
+    expect(iter.next().value).toEqual([3, 'c']);
+    expect(iter.next().value).toEqual([4, 'd']);
+    expect(iter.next().value).toEqual([5, 'e']);
+
+    expect(iter.next().done).toBeTruthy();
+  });
+
+  it('stop when the first iterator stops (right)', () => {
+    const otherSrc = ['a', 'b', 'c', 'd'];
+
+    const iter = LazyIter.from(src).zip(otherSrc);
+
+    expect(iter.next().value).toEqual([1, 'a']);
+    expect(iter.next().value).toEqual([2, 'b']);
+    expect(iter.next().value).toEqual([3, 'c']);
+    expect(iter.next().value).toEqual([4, 'd']);
+
+    expect(iter.next().done).toBeTruthy();
+  });
+
+
+  it('stop when the first iterator stops (left)', () => {
+    const otherSrc = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+    const iter = LazyIter.from(src).zip(otherSrc);
+
+    expect(iter.next().value).toEqual([1, 'a']);
+    expect(iter.next().value).toEqual([2, 'b']);
+    expect(iter.next().value).toEqual([3, 'c']);
+    expect(iter.next().value).toEqual([4, 'd']);
+    expect(iter.next().value).toEqual([5, 'e']);
+
+    expect(iter.next().done).toBeTruthy();
+  });
+});

@@ -52,6 +52,15 @@ export default abstract class LazyIter<Inner, Output> {
   map<Mapped>(func: (val: Output) => Mapped): LazyIter<Inner, Mapped> {
     return new MapIter(this, func);
   }
+
+  // iterate over two iterators at the same time, lazy
+  zip<InnerR, OutputR>(iter: LazyIter<InnerR, OutputR> | Iterable<OutputR>): LazyIter<[Inner, InnerR], [Output, OutputR]> | LazyIter<[Inner, OutputR], [Output, OutputR]> {
+    if (iter instanceof LazyIter) {
+      return new ZipIter(this, iter);
+    }
+
+    return new ZipIter(this, LazyIter.from(iter));
+  }
 }
 
 class BaseIter<T> extends LazyIter<T, T> {
@@ -135,5 +144,41 @@ class MapIter<T, U, M> extends LazyIter<T, M> {
       done: nextItem.done,
       value: this.func(nextItem.value),
     };
+  }
+}
+
+class ZipIter<InnerL, OutputL, InnerR, OutputR> extends LazyIter<[InnerL, InnerR], [OutputL, OutputR]> {
+  _left: LazyIter<InnerL, OutputL>;
+  _right: LazyIter<InnerR, OutputR>;
+
+  constructor(left: LazyIter<InnerL, OutputL>, right: LazyIter<InnerR, OutputR>) {
+    super();
+    this._left = left;
+    this._right = right;
+  }
+
+  next(): IteratorResult<[OutputL, OutputR]> {
+    const lNext = this._left.next();
+
+    if (lNext.done) {
+      // this is a workaround due to bad TS type defs on IteratorResult
+      // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
+      const result = { done: true, value: undefined };
+      return result as unknown as IteratorResult<[OutputL, OutputR]>;
+    }
+
+    const rNext = this._right.next();
+
+    if (rNext.done) {
+      // this is a workaround due to bad TS type defs on IteratorResult
+      // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
+      const result = { done: true, value: undefined };
+      return result as unknown as IteratorResult<[OutputL, OutputR]>;
+    }
+
+    return {
+      done: false,
+      value: [lNext.value, rNext.value],
+    }
   }
 }
