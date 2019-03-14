@@ -9,3 +9,16 @@ const total = iter
   .reduce((sum, curr) => sum + curr, 0);
 
 console.log(total);
+
+function* evens() {
+  let counter = 0;
+  while (true) {
+    counter += 1;
+    yield counter * 2;
+  }
+}
+
+
+const firstTen = LazyIter.from(evens()).take(10);
+
+console.log(firstTen.toArray());
