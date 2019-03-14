@@ -4,8 +4,7 @@ export default abstract class LazyIter<Inner, Output> {
   // return the next item in the list if it exists (no lazyness here)
   abstract next(): IteratorResult<Output>;
 
-  // todo: can we allow other types here?
-  static from<Type>(iterable: Array<Type>): LazyIter<Type, Type> {
+  static from<Type>(iterable: Iterable<Type>): LazyIter<Type, Type> {
     return new BaseIter(iterable);
   }
 
@@ -55,14 +54,11 @@ export default abstract class LazyIter<Inner, Output> {
   }
 }
 
-export class BaseIter<T> extends LazyIter<T, T> {
+class BaseIter<T> extends LazyIter<T, T> {
   _iter: Iterator<T>;
 
-  constructor(iterable: any) {
+  constructor(iterable: Iterable<T>) {
     super();
-    if (typeof iterable[Symbol.iterator] !== 'function') {
-      throw new Error('`iterable[Symbol.iterator]` must be a function');
-    }
     this._iter = iterable[Symbol.iterator]();
   }
 
@@ -71,7 +67,7 @@ export class BaseIter<T> extends LazyIter<T, T> {
   }
 }
 
-export class TakeIter<T, U> extends LazyIter<T, U> {
+class TakeIter<T, U> extends LazyIter<T, U> {
   _iter: LazyIter<T, U>;
   size: number;
   index: number;
@@ -97,7 +93,7 @@ export class TakeIter<T, U> extends LazyIter<T, U> {
   }
 }
 
-export class FilterIter<T, U> extends LazyIter<T, U> {
+class FilterIter<T, U> extends LazyIter<T, U> {
   _iter: LazyIter<T, U>;
   predicate: (val: U) => boolean;
 
@@ -122,7 +118,7 @@ export class FilterIter<T, U> extends LazyIter<T, U> {
   }
 }
 
-export class MapIter<T, U, M> extends LazyIter<T, M> {
+class MapIter<T, U, M> extends LazyIter<T, M> {
   _iter: LazyIter<T, U>;
   func: (val: U) => M;
 
