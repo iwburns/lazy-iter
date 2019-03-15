@@ -24,15 +24,18 @@ export default abstract class LazyIter<Inner, Output> {
   }
 
   // consume the rest of the iterator and call `func` on each item
-  forEach(func: (val: Output) => void) {
+  forEach(func: (val: Output, index: number) => void) {
+    let i = -1;
+
     while (true) {
       const nextItem = this.next();
+      i += 1;
 
       if (nextItem.done) {
         break;
       }
 
-      func(nextItem.value);
+      func(nextItem.value, i);
     }
   }
 
@@ -82,6 +85,10 @@ export default abstract class LazyIter<Inner, Output> {
     }
 
     return new ChainIter(this, LazyIter.from(iter));
+  }
+
+  enumerate(): LazyIter<Inner, [Output, number]> {
+    return new EnumerateIter(this);
   }
 }
 
@@ -229,5 +236,34 @@ class ChainIter<InnerF, OutputF, InnerS, OutputS> extends LazyIter<InnerF, Outpu
     }
 
     return this._second.next();
+  }
+}
+
+class EnumerateIter<Inner, Output> extends LazyIter<Inner, [Output, number]> {
+  _iter: LazyIter<Inner, Output>;
+  index: number;
+
+  constructor(iter: LazyIter<Inner, Output>) {
+    super();
+    this._iter = iter;
+    this.index = -1;
+  }
+
+  next(): IteratorResult<[Output, number]> {
+    const nextItem = this._iter.next();
+
+    if (nextItem.done) {
+      // this is a workaround due to bad TS type defs on IteratorResult
+      // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
+      const result = { done: true, value: undefined };
+      return result as unknown as IteratorResult<[Output, number]>;
+    }
+
+    this.index += 1;
+
+    return {
+      done: false,
+      value: [nextItem.value, this.index],
+    }
   }
 }

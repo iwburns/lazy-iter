@@ -41,13 +41,18 @@ describe('BaseIter', () => {
   describe('forEach', () => {
     it('should consume the iterator and call the given function on each item', () => {
       const iter = LazyIter.from(src);
-      const arr: Array<number> = [];
+      const expectedIndexes = src.map((val, i) => i);
 
-      iter.forEach(val => {
-        arr.push(val);
+      const values: Array<number> = [];
+      const indexes: Array<number> = [];
+
+      iter.forEach((val, index) => {
+        values.push(val);
+        indexes.push(index);
       });
 
-      expect(arr).toEqual(src);
+      expect(values).toEqual(src);
+      expect(indexes).toEqual(expectedIndexes);
     });
   });
 
@@ -161,6 +166,19 @@ describe('ChainIter', () => {
     expect(iter.next().value).toEqual('a');
     expect(iter.next().value).toEqual('b');
     expect(iter.next().value).toEqual('c');
+
+    expect(iter.next().done).toBeTruthy();
+  });
+});
+
+describe('EnumerateIter', () => {
+  it('should iterate and provide an index', () => {
+    const otherSrc = ['a', 'b', 'c'];
+    const iter = LazyIter.from(otherSrc).enumerate();
+
+    expect(iter.next().value).toEqual(['a', 0]);
+    expect(iter.next().value).toEqual(['b', 1]);
+    expect(iter.next().value).toEqual(['c', 2]);
 
     expect(iter.next().done).toBeTruthy();
   });
