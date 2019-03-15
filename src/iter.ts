@@ -54,6 +54,15 @@ export default abstract class LazyIter<Inner, Output> {
     }
   }
 
+  // return the nth item in the iterator
+  nth(n: number): IteratorResult<Output> {
+    while (n > 0) {
+      this.next();
+      n -= 1;
+    }
+    return this.next();
+  }
+
   // return iterator ending after "count" items
   take(count: number): LazyIter<Inner, Output> {
     return new TakeIter(this, count);
@@ -239,24 +248,24 @@ class ChainIter<InnerF, OutputF, InnerS, OutputS> extends LazyIter<InnerF, Outpu
   }
 }
 
-class EnumerateIter<Inner, Output> extends LazyIter<Inner, [Output, number]> {
-  _iter: LazyIter<Inner, Output>;
+class EnumerateIter<T, U> extends LazyIter<T, [U, number]> {
+  _iter: LazyIter<T, U>;
   index: number;
 
-  constructor(iter: LazyIter<Inner, Output>) {
+  constructor(iter: LazyIter<T, U>) {
     super();
     this._iter = iter;
     this.index = -1;
   }
 
-  next(): IteratorResult<[Output, number]> {
+  next(): IteratorResult<[U, number]> {
     const nextItem = this._iter.next();
 
     if (nextItem.done) {
       // this is a workaround due to bad TS type defs on IteratorResult
       // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
       const result = { done: true, value: undefined };
-      return result as unknown as IteratorResult<[Output, number]>;
+      return result as unknown as IteratorResult<[U, number]>;
     }
 
     this.index += 1;

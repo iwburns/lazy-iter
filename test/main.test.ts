@@ -69,6 +69,18 @@ describe('BaseIter', () => {
       expect(iter.next().done).toBeTruthy();
     });
   });
+
+  describe('nth', () => {
+    it('should return the nth item in the iterator', () => {
+      const iter = LazyIter.from(src);
+
+      expect(iter.nth(2).value).toEqual(3);
+      expect(iter.nth(0).value).toEqual(4);
+      expect(iter.nth(0).value).toEqual(5);
+
+      expect(iter.next().done).toBeTruthy();
+    });
+  });
 });
 
 describe('TakeIter', () => {
