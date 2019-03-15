@@ -119,7 +119,6 @@ describe('ZipIter', () => {
     expect(iter.next().done).toBeTruthy();
   });
 
-
   it('stop when the first iterator stops (left)', () => {
     const otherSrc = ['a', 'b', 'c', 'd', 'e', 'f'];
 
@@ -130,6 +129,25 @@ describe('ZipIter', () => {
     expect(iter.next().value).toEqual([3, 'c']);
     expect(iter.next().value).toEqual([4, 'd']);
     expect(iter.next().value).toEqual([5, 'e']);
+
+    expect(iter.next().done).toBeTruthy();
+  });
+});
+
+describe('ChainIter', () => {
+  it('should iterate over two iterables in order', () => {
+    const otherSrc = ['a', 'b', 'c'];
+
+    const iter = LazyIter.from(src).chain(otherSrc);
+
+    expect(iter.next().value).toEqual(1);
+    expect(iter.next().value).toEqual(2);
+    expect(iter.next().value).toEqual(3);
+    expect(iter.next().value).toEqual(4);
+    expect(iter.next().value).toEqual(5);
+    expect(iter.next().value).toEqual('a');
+    expect(iter.next().value).toEqual('b');
+    expect(iter.next().value).toEqual('c');
 
     expect(iter.next().done).toBeTruthy();
   });

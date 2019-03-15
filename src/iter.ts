@@ -61,6 +61,15 @@ export default abstract class LazyIter<Inner, Output> {
 
     return new ZipIter(this, LazyIter.from(iter));
   }
+
+  // iterate over two iterators one after the other
+  chain<InnerS, OutputS>(iter: LazyIter<InnerS, OutputS> | Iterable<OutputS>): LazyIter<Inner, Output | OutputS> {
+    if (iter instanceof LazyIter) {
+      return new ChainIter(this, iter);
+    }
+
+    return new ChainIter(this, LazyIter.from(iter));
+  }
 }
 
 class BaseIter<T> extends LazyIter<T, T> {
@@ -180,5 +189,32 @@ class ZipIter<InnerL, OutputL, InnerR, OutputR> extends LazyIter<[InnerL, InnerR
       done: false,
       value: [lNext.value, rNext.value],
     }
+  }
+}
+
+class ChainIter<InnerF, OutputF, InnerS, OutputS> extends LazyIter<InnerF, OutputF | OutputS> {
+  _first: LazyIter<InnerF, OutputF>;
+  _second: LazyIter<InnerS, OutputS>;
+  _onFirst: boolean;
+
+  constructor(first: LazyIter<InnerF, OutputF>, second: LazyIter<InnerS, OutputS>) {
+    super();
+    this._first = first;
+    this._second = second;
+    this._onFirst = true;
+  }
+
+  next(): IteratorResult<OutputF | OutputS> {
+    if (this._onFirst) {
+      const nextItem = this._first.next();
+
+      if (nextItem.done) {
+        this._onFirst = false;
+      } else {
+        return nextItem;
+      }
+    }
+
+    return this._second.next();
   }
 }
