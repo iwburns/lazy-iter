@@ -16,7 +16,6 @@ function run() {
   LazyIter.from(countingNumbers)
     .zip(doubled)
     .zip(alphabet)
-    .toArray()
     .forEach(([[count, double], letter]) => {
       console.log({ count, double, letter });
     });

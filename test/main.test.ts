@@ -38,6 +38,19 @@ describe('BaseIter', () => {
     });
   });
 
+  describe('forEach', () => {
+    it('should consume the iterator and call the given function on each item', () => {
+      const iter = LazyIter.from(src);
+      const arr: Array<number> = [];
+
+      iter.forEach(val => {
+        arr.push(val);
+      });
+
+      expect(arr).toEqual(src);
+    });
+  });
+
   describe('reduce', () => {
     it('should consume the iterator and return the "reduced" result', () => {
       const iter = LazyIter.from(src);

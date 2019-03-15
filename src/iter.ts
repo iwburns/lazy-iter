@@ -23,6 +23,19 @@ export default abstract class LazyIter<Inner, Output> {
     }
   }
 
+  // consume the rest of the iterator and call `func` on each item
+  forEach(func: (val: Output) => void) {
+    while (true) {
+      const nextItem = this.next();
+
+      if (nextItem.done) {
+        break;
+      }
+
+      func(nextItem.value);
+    }
+  }
+
   // reduce into a single value, not lazy
   reduce<Acc>(reducer: (acc: Acc, val: Output) => Acc, initialValue: Acc): Acc {
     let final = initialValue;
