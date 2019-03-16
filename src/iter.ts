@@ -1,11 +1,20 @@
 // todo: can we split up this file at all?  need to avoid circular dependencies when doing so
 
 export default abstract class LazyIter<Inner, Output> {
+  static from<Type>(iterable: Iterable<Type>): LazyIter<Type, Type> {
+    return new BaseIter(iterable);
+  }
+
   // return the next item in the list if it exists (no lazyness here)
   abstract next(): IteratorResult<Output>;
 
-  static from<Type>(iterable: Iterable<Type>): LazyIter<Type, Type> {
-    return new BaseIter(iterable);
+  // return the nth item in the iterator
+  nth(n: number): IteratorResult<Output> {
+    while (n > 0) {
+      this.next();
+      n -= 1;
+    }
+    return this.next();
   }
 
   // consume rest of iterator and collect into an array
@@ -52,15 +61,6 @@ export default abstract class LazyIter<Inner, Output> {
 
       final = reducer(final, nextItem.value);
     }
-  }
-
-  // return the nth item in the iterator
-  nth(n: number): IteratorResult<Output> {
-    while (n > 0) {
-      this.next();
-      n -= 1;
-    }
-    return this.next();
   }
 
   // return an iterator starting after "count" items
