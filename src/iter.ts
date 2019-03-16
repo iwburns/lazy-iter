@@ -63,6 +63,10 @@ export default abstract class LazyIter<Inner, Output> {
     return this.next();
   }
 
+  skip(n: number): LazyIter<Inner, Output> {
+    return new SkipIter(this, n);
+  }
+
   // return iterator ending after "count" items
   take(count: number): LazyIter<Inner, Output> {
     return new TakeIter(this, count);
@@ -111,6 +115,28 @@ class BaseIter<T> extends LazyIter<T, T> {
 
   next(): IteratorResult<T> {
     return this._iter.next();
+  }
+}
+
+class SkipIter<T, U> extends LazyIter<T, U> {
+  iter: LazyIter<T, U>;
+  count: number;
+
+  constructor(iter: LazyIter<T, U>, count: number) {
+    super();
+    this.iter = iter;
+    this.count = count;
+  }
+
+  next(): IteratorResult<U> {
+    if (this.count === 0) {
+      return this.iter.next();
+    }
+
+    const skip = this.count;
+    this.count = 0;
+
+    return this.iter.nth(skip);
   }
 }
 

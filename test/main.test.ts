@@ -83,6 +83,18 @@ describe('BaseIter', () => {
   });
 });
 
+describe('SkipIter', () => {
+  it('should skip x number of items and continue iterating', () => {
+    const iter = LazyIter.from(src).skip(2);
+
+    expect(iter.next().value).toBe(3);
+    expect(iter.next().value).toBe(4);
+    expect(iter.next().value).toBe(5);
+
+    expect(iter.next().done).toBeTruthy();
+  });
+});
+
 describe('TakeIter', () => {
   it('should iterate over x number of items from an array', () => {
     const iter = LazyIter.from(src).take(4);
