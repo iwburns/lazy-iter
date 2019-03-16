@@ -106,15 +106,15 @@ export default abstract class LazyIter<Inner, Output> {
 }
 
 class BaseIter<T> extends LazyIter<T, T> {
-  _iter: Iterator<T>;
+  iter: Iterator<T>;
 
   constructor(iterable: Iterable<T>) {
     super();
-    this._iter = iterable[Symbol.iterator]();
+    this.iter = iterable[Symbol.iterator]();
   }
 
   next(): IteratorResult<T> {
-    return this._iter.next();
+    return this.iter.next();
   }
 }
 
@@ -141,13 +141,13 @@ class SkipIter<T, U> extends LazyIter<T, U> {
 }
 
 class TakeIter<T, U> extends LazyIter<T, U> {
-  _iter: LazyIter<T, U>;
+  iter: LazyIter<T, U>;
   size: number;
   index: number;
 
   constructor(iter: LazyIter<T, U>, size: number) {
     super();
-    this._iter = iter;
+    this.iter = iter;
     this.size = size;
     this.index = 0;
   }
@@ -162,23 +162,23 @@ class TakeIter<T, U> extends LazyIter<T, U> {
 
     this.index += 1;
 
-    return this._iter.next();
+    return this.iter.next();
   }
 }
 
 class FilterIter<T, U> extends LazyIter<T, U> {
-  _iter: LazyIter<T, U>;
+  iter: LazyIter<T, U>;
   predicate: (val: U) => boolean;
 
   constructor(iter: LazyIter<T, U>, predicate: (val: U) => boolean) {
     super();
-    this._iter = iter;
+    this.iter = iter;
     this.predicate = predicate;
   }
 
   next(): IteratorResult<U> {
     while (true) {
-      const nextItem = this._iter.next();
+      const nextItem = this.iter.next();
 
       if (nextItem.done) {
         return nextItem;
@@ -192,17 +192,17 @@ class FilterIter<T, U> extends LazyIter<T, U> {
 }
 
 class MapIter<T, U, M> extends LazyIter<T, M> {
-  _iter: LazyIter<T, U>;
+  iter: LazyIter<T, U>;
   func: (val: U) => M;
 
   constructor(iter: LazyIter<T, U>, func: (val: U) => M) {
     super();
-    this._iter = iter;
+    this.iter = iter;
     this.func = func;
   }
 
   next(): IteratorResult<M> {
-    const nextItem = this._iter.next();
+    const nextItem = this.iter.next();
 
     return {
       done: nextItem.done,
@@ -212,17 +212,17 @@ class MapIter<T, U, M> extends LazyIter<T, M> {
 }
 
 class ZipIter<InnerL, OutputL, InnerR, OutputR> extends LazyIter<[InnerL, InnerR], [OutputL, OutputR]> {
-  _left: LazyIter<InnerL, OutputL>;
-  _right: LazyIter<InnerR, OutputR>;
+  left: LazyIter<InnerL, OutputL>;
+  right: LazyIter<InnerR, OutputR>;
 
   constructor(left: LazyIter<InnerL, OutputL>, right: LazyIter<InnerR, OutputR>) {
     super();
-    this._left = left;
-    this._right = right;
+    this.left = left;
+    this.right = right;
   }
 
   next(): IteratorResult<[OutputL, OutputR]> {
-    const lNext = this._left.next();
+    const lNext = this.left.next();
 
     if (lNext.done) {
       // this is a workaround due to bad TS type defs on IteratorResult
@@ -231,7 +231,7 @@ class ZipIter<InnerL, OutputL, InnerR, OutputR> extends LazyIter<[InnerL, InnerR
       return result as unknown as IteratorResult<[OutputL, OutputR]>;
     }
 
-    const rNext = this._right.next();
+    const rNext = this.right.next();
 
     if (rNext.done) {
       // this is a workaround due to bad TS type defs on IteratorResult
@@ -248,44 +248,44 @@ class ZipIter<InnerL, OutputL, InnerR, OutputR> extends LazyIter<[InnerL, InnerR
 }
 
 class ChainIter<InnerF, OutputF, InnerS, OutputS> extends LazyIter<InnerF, OutputF | OutputS> {
-  _first: LazyIter<InnerF, OutputF>;
-  _second: LazyIter<InnerS, OutputS>;
-  _onFirst: boolean;
+  first: LazyIter<InnerF, OutputF>;
+  second: LazyIter<InnerS, OutputS>;
+  onFirst: boolean;
 
   constructor(first: LazyIter<InnerF, OutputF>, second: LazyIter<InnerS, OutputS>) {
     super();
-    this._first = first;
-    this._second = second;
-    this._onFirst = true;
+    this.first = first;
+    this.second = second;
+    this.onFirst = true;
   }
 
   next(): IteratorResult<OutputF | OutputS> {
-    if (this._onFirst) {
-      const nextItem = this._first.next();
+    if (this.onFirst) {
+      const nextItem = this.first.next();
 
       if (nextItem.done) {
-        this._onFirst = false;
+        this.onFirst = false;
       } else {
         return nextItem;
       }
     }
 
-    return this._second.next();
+    return this.second.next();
   }
 }
 
 class EnumerateIter<T, U> extends LazyIter<T, [U, number]> {
-  _iter: LazyIter<T, U>;
+  iter: LazyIter<T, U>;
   index: number;
 
   constructor(iter: LazyIter<T, U>) {
     super();
-    this._iter = iter;
+    this.iter = iter;
     this.index = -1;
   }
 
   next(): IteratorResult<[U, number]> {
-    const nextItem = this._iter.next();
+    const nextItem = this.iter.next();
 
     if (nextItem.done) {
       // this is a workaround due to bad TS type defs on IteratorResult
