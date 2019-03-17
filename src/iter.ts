@@ -205,8 +205,15 @@ class MapIter<T, U, M> extends LazyIter<T, M> {
   next(): IteratorResult<M> {
     const nextItem = this.iter.next();
 
+    if (nextItem.done) {
+      // this is a workaround due to bad TS type defs on IteratorResult
+      // see this issue for info: https://github.com/Microsoft/TypeScript/issues/11375
+      const result = { done: true, value: undefined };
+      return result as unknown as IteratorResult<M>;
+    }
+
     return {
-      done: nextItem.done,
+      done: false,
       value: this.func(nextItem.value),
     };
   }
