@@ -65,7 +65,7 @@ function testToArray<T, U>(getIter: () => { iter: LazyIter<T, U>, values: Array<
 
       const first = iter.next().value;
       const expected = values[0];
-      expect(first).toBe(expected);
+      expect(first).toEqual(expected);
 
       const arr = iter.toArray();
       expect(arr).toEqual(values.slice(1));
