@@ -167,6 +167,12 @@ function testZip<T, U>(getIter: () => { iter: LazyIter<T, U>, values: Array<U> }
       const other = getAlphaArray(values.length - 1);
       expectToIterateOverValues(iter.zip(other), getPairs(values, other));
     });
+
+    it('should accept a LazyIter as an argument', () => {
+      const { iter, values } = getIter();
+      const other = getAlphaArray(values.length);
+      expectToIterateOverValues(iter.zip(LazyIter.from(other)), getPairs(values, other));
+    });
   });
 }
 
@@ -176,6 +182,12 @@ function testChain<T, U>(getIter: () => { iter: LazyIter<T, U>, values: Array<U>
       const { iter, values } = getIter();
       const other = getAlphaArray(values.length);
       expectToIterateOverValues(iter.chain(other), [...values, ...other]);
+    });
+
+    it('should accept a LazyIter as an argument', () => {
+      const { iter, values } = getIter();
+      const other = getAlphaArray(values.length);
+      expectToIterateOverValues(iter.chain(LazyIter.from(other)), [...values, ...other]);
     });
   });
 }
