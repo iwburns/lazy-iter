@@ -135,6 +135,31 @@ function testEvery(getIter: () => { iter: LazyIter<number, number>, values: Arra
   });
 }
 
+function testSome(getIter: () => { iter: LazyIter<number, number>, values: Array<number> }) {
+  describe('some', () => {
+    it('should iterate and return true if any item returns true for the predicate', () => {
+      {
+        const { iter, values } = getIter();
+        const predicate = (value: number, index: number) => value > 11;
+
+        const result = iter.some(predicate);
+        const expected = values.some(predicate);
+
+        expect(result).toBe(expected);
+      }
+      {
+        const { iter, values } = getIter();
+        const predicate = (value: number, index: number) => value < 11;
+
+        const result = iter.some(predicate);
+        const expected = values.some(predicate);
+
+        expect(result).toBe(expected);
+      }
+    });
+  });
+}
+
 function testSkip<T, U>(getIter: () => { iter: LazyIter<T, U>, values: Array<U> }) {
   describe('skip', () => {
     it('should skip x number of elements and continue iterating', () => {
@@ -235,6 +260,7 @@ export default {
   testForEach,
   testReduce,
   testEvery,
+  testSome,
   testSkip,
   testTake,
   testFilter,

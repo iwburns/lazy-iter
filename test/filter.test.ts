@@ -18,6 +18,7 @@ describe('FilterIter', () => {
   util.testForEach(getIter);
   util.testReduce(getIter);
   util.testEvery(getIter);
+  util.testSome(getIter);
   util.testSkip(getIter);
   util.testTake(getIter);
   util.testFilter(getIter);

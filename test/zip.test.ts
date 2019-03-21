@@ -54,6 +54,29 @@ describe('ZipIter', () => {
     });
   });
 
+  describe('some', () => {
+    it('should iterate and return true if any item returns true for the predicate', () => {
+      {
+        const { iter, values } = getIter();
+        const predicate = ([value, index]: Array<number>, i: number) => value > 11;
+
+        const result = iter.some(predicate);
+        const expected = values.some(predicate);
+
+        expect(result).toBe(expected);
+      }
+      {
+        const { iter, values } = getIter();
+        const predicate = ([value, index]: Array<number>, i: number) => value < 11;
+
+        const result = iter.some(predicate);
+        const expected = values.some(predicate);
+
+        expect(result).toBe(expected);
+      }
+    });
+  });
+
   util.testSkip(getIter);
   util.testTake(getIter);
 
