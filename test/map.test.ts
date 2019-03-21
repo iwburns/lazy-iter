@@ -17,6 +17,7 @@ describe('MapIter', () => {
   util.testToArray(getIter);
   util.testForEach(getIter);
   util.testReduce(getIter);
+  util.testEvery(getIter);
   util.testSkip(getIter);
   util.testTake(getIter);
   util.testFilter(getIter);

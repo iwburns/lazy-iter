@@ -63,6 +63,25 @@ export default abstract class LazyIter<Inner, Output> {
     }
   }
 
+  // iterate and return true if all items return true for `predicate`.  short-circuit if false found
+  every(predicate: (val: Output, index: number) => boolean): boolean {
+    let result = true;
+    let i = -1;
+
+    while (true) {
+      const nextItem = this.next();
+      i += 1;
+
+      if (nextItem.done) {
+        return true;
+      }
+
+      if (!predicate(nextItem.value, i)) {
+        return false;
+      }
+    }
+  }
+
   // return an iterator starting after "count" items
   skip(count: number): LazyIter<Inner, Output> {
     return new SkipIter(this, count);

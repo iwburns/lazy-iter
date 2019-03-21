@@ -30,6 +30,28 @@ describe('MapIter', () => {
     });
   });
 
+  describe('every', () => {
+    it('should iterate and return true if all items return true for the predicate', () => {
+      {
+        const { iter, values } = getIter();
+        const predicate = ([value, index]: Array<number>, i: number) => value > 11;
+
+        const result = iter.every(predicate);
+        const expected = values.every(predicate);
+
+        expect(result).toBe(expected);
+      }
+      {
+        const { iter, values } = getIter();
+        const predicate = ([value, index]: Array<number>, i: number) => value < 11;
+
+        const result = iter.every(predicate);
+        const expected = values.every(predicate);
+
+        expect(result).toBe(expected);
+      }
+    });
+  });
 
   util.testSkip(getIter);
   util.testTake(getIter);
